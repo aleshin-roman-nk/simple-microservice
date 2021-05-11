@@ -1,31 +1,70 @@
 ﻿using System;
+using System.IO;
+using System.Net;
 using System.Threading.Tasks;
 
-namespace NetCore.Docker
+namespace ConsoleApp3HttpListener
 {
-    class Program
-    {
-        // static async Task Main(string[] args)
-        // {
-        //     var counter = 0;
-        //     var max = args.Length != 0 ? Convert.ToInt32(args[0]) : -1;
-        //     while (max == -1 || counter < max)
-        //     {
-        //         Console.WriteLine($"Counter: {++counter}");
-        //         await Task.Delay(1000);
-        //     }
-        // }
+	class Program
+	{
+		static void Main(string[] args)
+		{
+			//         HttpListener listener = new HttpListener();
+			//         // установка адресов прослушки
+			//         listener.Prefixes.Add("http://localhost:8888/connection/");
+			//         listener.Start();
+			//         Console.WriteLine("Ожидание подключений...");
+			//         // метод GetContext блокирует текущий поток, ожидая получение запроса 
+			//         HttpListenerContext context = listener.GetContext();
+			//         HttpListenerRequest request = context.Request;
+			//         // получаем объект ответа
+			//         HttpListenerResponse response = context.Response;
+			//         // создаем ответ в виде кода html
+			//         string responseStr = "<html><head><meta charset='utf8'></head><body>Привет мир!</body></html>";
+			//         byte[] buffer = System.Text.Encoding.UTF8.GetBytes(responseStr);
+			//         // получаем поток ответа и пишем в него ответ
+			//         response.ContentLength64 = buffer.Length;
+			//         Stream output = response.OutputStream;
+			//         output.Write(buffer, 0, buffer.Length);
+			//         // закрываем поток
+			//         output.Close();
+			//         // останавливаем прослушивание подключений
+			//         listener.Stop();
+			//         Console.WriteLine("Обработка подключений завершена");
+			//Console.WriteLine($"Получен {request.RawUrl}");
+			//         Console.Read();
 
-        static void Main(string[] args)
+			var t = Listen();
+
+			t.Wait();
+
+			//Console.Read();
+        }
+
+        private static async Task Listen()
         {
-            PoorMan poor_man = new PoorMan(2000);
+            HttpListener listener = new HttpListener();
+            listener.Prefixes.Add("http://127.0.0.5:5001/");
+            listener.Start();
+            Console.WriteLine("Ожидание подключений...");
 
-            while(!poor_man.Sutisfied)
+			while (true)
             {
-                poor_man.AskMoney();
-            }
-            
-            Console.ReadLine();
+                HttpListenerContext context = await listener.GetContextAsync();
+                HttpListenerRequest request = context.Request;
+                HttpListenerResponse response = context.Response;
+
+				var now = DateTime.Now;
+
+                string responseString = $"<html><head><meta charset='utf8'></head><body>Привет мир! Сейчас {now.ToLongTimeString()}</body></html>";
+                byte[] buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
+                response.ContentLength64 = buffer.Length;
+                Stream output = response.OutputStream;
+                output.Write(buffer, 0, buffer.Length);
+                output.Close();
+
+				Console.WriteLine($"Получен {request.RawUrl}");
+			}
         }
     }
 }
